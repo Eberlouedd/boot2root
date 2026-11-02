@@ -35,6 +35,8 @@ Then, we use SearchSploit:
 
 We notice a recurring exploit in the results: **Dirty COW (CVE-2016-5195)**.
 
+scp dirty_script.c zaz@192.168.56.112:/home/zaz
+
 ## Exploitation
 
 We find several scripts online that exploit this vulnerability.
@@ -42,7 +44,7 @@ We find several scripts online that exploit this vulnerability.
 We choose one from GitHub and compile it using:
 
 ```bash
-gcc -pthread cow.c -o dirty_cow -lcrypt
+gcc -pthread dirty_script.c -o dirty_cow -lcrypt
 ```
 
 This exploit creates a new user named `toor` with root privileges (UID 0) and a password we specify.
